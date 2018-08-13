@@ -1,0 +1,29 @@
+build: false
+
+environment:
+    PYTHON: "C:\\Python27"
+    PYTHON_VERSION: "2.7.8"
+    PYTHON_ARCH: "32"
+
+    CONAN_BUILD_POLICY: "missing"
+    CONAN_REFERENCE: "android-ndk/r17b"
+    CONAN_USERNAME: "tereius"
+    CONAN_LOGIN_USERNAME: "Tereius"
+    CONAN_CHANNEL: "stable"
+    CONAN_UPLOAD: "https://api.bintray.com/conan/tereius/public-conan"
+    CONAN_REMOTES: "https://api.bintray.com/conan/bincrafters/public-conan"
+    CONAN_PASSWORD:
+        secure: 1ZYohUykKTMP2JZ/H9octIstO7GL9Wl9Ym+N4G0XLvSxr27L749N69l/9gk4KNO4
+    
+    matrix:
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+          CONAN_VISUAL_VERSIONS: 12
+
+install:
+  - set PATH=%PATH%;%PYTHON%/Scripts/
+  - pip.exe install conan --upgrade
+  - pip.exe install conan_package_tools
+  - conan user # It creates the conan data directory
+
+test_script:
+  - python build.py
