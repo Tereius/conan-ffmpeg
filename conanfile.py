@@ -230,7 +230,6 @@ class FFMpegConan(ConanFile):
 
     def build(self):
 
-        print("mypath " + os.getcwd())
         if self.is_msvc or self.is_mingw_windows or self.is_android_windows:
             msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
             with tools.environment_append({'PATH': [msys_bin],
@@ -402,11 +401,11 @@ class FFMpegConan(ConanFile):
             
             # ffmpeg's configure is not actually from autotools, so it doesn't understand standard options like
             # --host, --build, --target
-            with tools.environment_append({"PATH": self.source_folder}): # Add the source folder to the path so that gas-preprocessor.pl can be found
+            with tools.environment_append({"PATH": self.build_folder}): # Add the build folder to the path so that gas-preprocessor.pl can be found
 
                 print(os.getcwd())
                 env_build.configure(args=args, build=False, host=False, target=False,
-                                    pkg_config_paths=[pkg_config_path], configure_dir=self.source_folder + "/sources")
+                                    pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
 
                 with tools.environment_append(env_build.vars):
                     self.run("make", cwd=self.build_folder, win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
