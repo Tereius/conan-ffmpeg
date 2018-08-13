@@ -123,11 +123,11 @@ class FFMpegConan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == 'Android':
-            self.build_requires("android-ndk/r17b@tereius/stable")
             self.options["android-ndk"].makeStandalone = True
             if self.settings.os_build == 'Windows':
                 self.build_requires("strawberryperl/5.26.0@conan/stable")
                 self.build_requires("msys2_installer/latest@bincrafters/stable")
+            self.build_requires("android-ndk/r17b@tereius/stable")
         if self.settings.arch == "x86" or self.settings.arch == "x86_64":
             self.build_requires("yasm_installer/1.3.0@bincrafters/stable")
         if self.settings.os == 'Windows':
@@ -408,6 +408,7 @@ class FFMpegConan(ConanFile):
                                     pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
 
                 with tools.environment_append(env_build.vars):
+                    #self.run("whereis make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
                     self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
                     self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
 
