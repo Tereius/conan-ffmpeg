@@ -261,7 +261,8 @@ class FFMpegConan(ConanFile):
 
     def build_configure(self):
         self.check_dependencies()
-        # with tools.chdir(self.build_folder):
+
+        #with tools.chdir(self.build_folder + "/sources"):
         prefix = tools.unix_path(self.package_folder) if self.settings.os == 'Windows' or self.settings.os_build == 'Windows' else self.package_folder
         args = ['--prefix=%s' % prefix,
                 '--disable-doc',
@@ -402,14 +403,13 @@ class FFMpegConan(ConanFile):
             # ffmpeg's configure is not actually from autotools, so it doesn't understand standard options like
             # --host, --build, --target
             with tools.environment_append({"PATH": self.build_folder}): # Add the build folder to the path so that gas-preprocessor.pl can be found
-
-                print(os.getcwd())
+            
                 env_build.configure(args=args, build=False, host=False, target=False,
                                     pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
 
                 with tools.environment_append(env_build.vars):
-                    self.run("make", cwd=self.build_folder, win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-                    self.run("make install", cwd=self.build_folder, win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                    self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                    self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
 
                 #env_build.make()
                 #env_build.make(args=['install'])
