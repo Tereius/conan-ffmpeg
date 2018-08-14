@@ -402,7 +402,7 @@ class FFMpegConan(ConanFile):
             
             # ffmpeg's configure is not actually from autotools, so it doesn't understand standard options like
             # --host, --build, --target
-            with tools.environment_append({"PATH": self.build_folder}): # Add the build folder to the path so that gas-preprocessor.pl can be found
+            with tools.environment_append({"PATH": [self.build_folder]}): # Add the build folder to the path so that gas-preprocessor.pl can be found
             
                 env_build.configure(args=args, build=False, host=False, target=False,
                                     pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
