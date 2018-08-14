@@ -9,7 +9,7 @@ import shutil
 
 class FFMpegConan(ConanFile):
     name = "ffmpeg"
-    version = "4.0"
+    version = "4.0.2"
     url = "https://github.com/Tereius/conan-ffmpeg"
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md"
@@ -345,13 +345,14 @@ class FFMpegConan(ConanFile):
             args.append('--nm=' + tools.unix_path(self.deps_env_info['android-ndk'].NM))
             args.append('--ar=' + tools.unix_path(self.deps_env_info['android-ndk'].AR))
             args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].LD))
+            args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
             args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
             args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
             args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
             args.append('--ranlib=' + tools.unix_path(self.deps_env_info['android-ndk'].RANLIB))
-            args.append('--objcc=' + tools.unix_path(self.deps_env_info['android-ndk'].OBJCOPY))
-            #args.append('--sysroot=' + tools.unix_path(self.deps_env_info['android-ndk'].SYSROOT))
+            #args.append('--objcc=' + tools.unix_path(self.deps_env_info['android-ndk'].OBJCOPY))
+
+            args.append('--sysroot=' + tools.unix_path(self.deps_env_info['android-ndk'].SYSROOT))
 
             args.append('--cross-prefix=' + self.deps_env_info['android-ndk'].CHOST + '-')
             args.append('--enable-mediacodec' if self.options.mediacodec else '--disable-mediacodec')
