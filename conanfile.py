@@ -50,7 +50,7 @@ class FFMpegConan(ConanFile):
                "mediacodec": [True, False]}
     default_options = ("shared=True",
                        "fPIC=True",
-                       "postproc=False",
+                       "postproc=True",
                        "zlib=False",
                        "bzlib=False",
                        "lzma=False",
