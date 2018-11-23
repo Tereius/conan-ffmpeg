@@ -344,12 +344,19 @@ class FFMpegConan(ConanFile):
 
             args.append('--nm=' + tools.unix_path(self.deps_env_info['android-ndk'].NM))
             args.append('--ar=' + tools.unix_path(self.deps_env_info['android-ndk'].AR))
-            args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
-            args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
             args.append('--ranlib=' + tools.unix_path(self.deps_env_info['android-ndk'].RANLIB))
+            args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
+            if self.settings.compiler == 'clang':
+                # if we use arm-linux-androideabi-clang.cmd we will run into the windows cmd.exe max command line length limit during linking. We should use the sh scripts
+                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
+                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
+                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
+                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX)[:-4])
+            else:
+                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
             #args.append('--objcc=' + tools.unix_path(self.deps_env_info['android-ndk'].OBJCOPY))
 
             args.append('--sysroot=' + tools.unix_path(self.deps_env_info['android-ndk'].SYSROOT))
@@ -357,6 +364,9 @@ class FFMpegConan(ConanFile):
             args.append('--cross-prefix=' + self.deps_env_info['android-ndk'].CHOST + '-')
             args.append('--enable-mediacodec' if self.options.mediacodec else '--disable-mediacodec')
             args.append('--enable-jni' if self.options.mediacodec else '--disable-jni')
+
+            if self.settings.compiler == 'clang':
+                tools.replace_in_file("./sources/libavdevice/v4l2.c", "int (*ioctl_f)(int fd, unsigned long int request, ...);", "int (*ioctl_f)(int fd, unsigned int request, ...);")
 
         # FIXME disable CUDA and CUVID by default, revisit later
         args.extend(['--disable-cuda', '--disable-cuvid'])
