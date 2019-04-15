@@ -109,8 +109,9 @@ class FFMpegConan(ConanFile):
             self.options.remove("xcb")
             self.options.remove("alsa")
             self.options.remove("pulse")
-        if self.settings.os != "Macos":
-            self.options.remove("appkit")
+        if self.settings.os != "Macos" and self.settings.os != "iOS":
+            if self.settings.os != "Macos":
+                self.options.remove("appkit")
             self.options.remove("avfoundation")
             self.options.remove("coreimage")
             self.options.remove("audiotoolbox")
@@ -288,7 +289,7 @@ class FFMpegConan(ConanFile):
         elif str(self.settings.arch).startswith('armv7'):
             args.append('--arch=armv7-a')
         elif str(self.settings.arch).startswith('armv8'):
-            args.append('--arch=armv8-a')
+            args.append('--arch=arm64')
 
         args.append('--enable-postproc' if self.options.postproc else '--disable-postproc')
         args.append('--enable-pic' if self.options.fPIC else '--disable-pic')
@@ -327,13 +328,23 @@ class FFMpegConan(ConanFile):
                 args.extend(['--disable-libxcb', '--disable-libxcb-shm',
                                 '--disable-libxcb-shape', '--disable-libxcb-xfixes'])
 
-        if self.settings.os == "Macos":
-            args.append('--enable-appkit' if self.options.appkit else '--disable-appkit')
+        if self.settings.os == "Macos" or self.settings.os == "iOS":
+            if self.settings.os == "iOS":
+                args.append('--disable-appkit')
             args.append('--enable-avfoundation' if self.options.avfoundation else '--disable-avfoundation')
             args.append('--enable-coreimage' if self.options.avfoundation else '--disable-coreimage')
             args.append('--enable-audiotoolbox' if self.options.audiotoolbox else '--disable-audiotoolbox')
             args.append('--enable-videotoolbox' if self.options.videotoolbox else '--disable-videotoolbox')
             args.append('--enable-securetransport' if self.options.securetransport else '--disable-securetransport')
+
+        if self.settings.os == "iOS":
+            args.append('--enable-cross-compile')
+            args.append('--target-os=darwin')
+            #args.append('--sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS%s.sdk' % self.settings.os.version)
+            args.append('--cc=xcrun -sdk iphoneos clang')
+            args.append('--as=gas-preprocessor.pl -arch aarch64 -- xcrun -sdk iphoneos clang')
+            args.append('--extra-cflags=-arch arm64 -mios-version-min=8.0 -fembed-bitcode')
+            args.append('--extra-ldflags=-arch arm64 -mios-version-min=8.0 -fembed-bitcode')
 
         if self.settings.os == "Windows":
             args.append('--enable-libmfx' if self.options.qsv else '--disable-libmfx')
@@ -410,11 +421,11 @@ class FFMpegConan(ConanFile):
                     tools.run_in_windows_bash(self, command)
 
             env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-            
+
             # ffmpeg's configure is not actually from autotools, so it doesn't understand standard options like
             # --host, --build, --target
             with tools.environment_append({"PATH": [self.build_folder]}): # Add the build folder to the path so that gas-preprocessor.pl can be found
-            
+
                 env_build.configure(args=args, build=False, host=False, target=False,
                                     pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
 
@@ -455,7 +466,7 @@ class FFMpegConan(ConanFile):
                 self.cpp_info.libs = ['lib' + lib for lib in libs]
         else:
             self.cpp_info.libs = libs
-        if self.settings.os == "Macos":
+        if self.settings.os == "Macos" or self.settings.os == "iOS":
             frameworks = ['CoreVideo', 'CoreMedia', 'CoreGraphics', 'CoreFoundation', 'OpenGL', 'Foundation']
             if self.options.appkit:
                 frameworks.append('AppKit')
