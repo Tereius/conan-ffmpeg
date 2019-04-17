@@ -110,8 +110,7 @@ class FFMpegConan(ConanFile):
             self.options.remove("alsa")
             self.options.remove("pulse")
         if self.settings.os != "Macos" and self.settings.os != "iOS":
-            if self.settings.os != "Macos":
-                self.options.remove("appkit")
+            self.options.remove("appkit")
             self.options.remove("avfoundation")
             self.options.remove("coreimage")
             self.options.remove("audiotoolbox")
@@ -121,6 +120,8 @@ class FFMpegConan(ConanFile):
             self.options.remove("qsv")
         if self.settings.os != "Android":
             self.options.remove("mediacodec")
+        if self.settings.os == "iOS":
+            self.options.appkit = False
 
     def build_requirements(self):
         if self.settings.os == 'Android':
@@ -329,8 +330,7 @@ class FFMpegConan(ConanFile):
                                 '--disable-libxcb-shape', '--disable-libxcb-xfixes'])
 
         if self.settings.os == "Macos" or self.settings.os == "iOS":
-            if self.settings.os == "iOS":
-                args.append('--disable-appkit')
+            args.append('--enable-appkit' if self.options.appkit else '--disable-appkit')
             args.append('--enable-avfoundation' if self.options.avfoundation else '--disable-avfoundation')
             args.append('--enable-coreimage' if self.options.avfoundation else '--disable-coreimage')
             args.append('--enable-audiotoolbox' if self.options.audiotoolbox else '--disable-audiotoolbox')
@@ -467,7 +467,7 @@ class FFMpegConan(ConanFile):
         else:
             self.cpp_info.libs = libs
         if self.settings.os == "Macos" or self.settings.os == "iOS":
-            frameworks = ['CoreVideo', 'CoreMedia', 'CoreGraphics', 'CoreFoundation', 'OpenGL', 'Foundation']
+            frameworks = ['CoreVideo', 'CoreMedia', 'CoreGraphics', 'CoreFoundation', 'Foundation']
             if self.options.appkit:
                 frameworks.append('AppKit')
             if self.options.avfoundation:
@@ -482,6 +482,8 @@ class FFMpegConan(ConanFile):
                 frameworks.append('Security')
             for framework in frameworks:
                 self.cpp_info.exelinkflags.append("-framework %s" % framework)
+            if self.settings.os == "Macos":
+                self.cpp_info.exelinkflags.append("-framework OpenGL")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
         elif self.settings.os == "Linux":
             self.cpp_info.libs.extend(['dl', 'pthread'])
