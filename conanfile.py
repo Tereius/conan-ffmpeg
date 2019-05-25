@@ -127,12 +127,12 @@ class FFMpegConan(ConanFile):
             self.options["android-ndk"].makeStandalone = True
             if self.settings.os_build == 'Windows':
                 self.build_requires("strawberryperl/5.26.0@conan/stable")
-                self.build_requires("msys2_installer/latest@bincrafters/stable")
+                self.build_requires("msys2/20161025@tereius/stable")
             self.build_requires("android-ndk/r17b@tereius/stable")
         if self.settings.arch == "x86" or self.settings.arch == "x86_64":
             self.build_requires("yasm_installer/1.3.0@bincrafters/stable")
         if self.settings.os == 'Windows':
-            self.build_requires("msys2_installer/latest@bincrafters/stable")
+            self.build_requires("msys2/20161025@tereius/stable")
 
     def requirements(self):
         if self.options.zlib:
@@ -158,7 +158,7 @@ class FFMpegConan(ConanFile):
         if self.options.sdl2:
             self.requires.add("sdl2/2.0.7@bincrafters/stable")
         if self.options.x264:
-            self.requires.add("libx264/20171211@bincrafters/stable")
+            self.requires.add("libx264/20171211@tereius/stable")
         if self.options.x265:
             self.requires.add("libx265/2.7@bincrafters/stable")
         if self.options.vpx:
@@ -357,17 +357,11 @@ class FFMpegConan(ConanFile):
             args.append('--ar=' + tools.unix_path(self.deps_env_info['android-ndk'].AR))
             args.append('--ranlib=' + tools.unix_path(self.deps_env_info['android-ndk'].RANLIB))
             args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
-            if self.settings.compiler == 'clang':
-                # if we use arm-linux-androideabi-clang.cmd we will run into the windows cmd.exe max command line length limit during linking. We should use the sh scripts
-                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
-                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
-                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
-                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX)[:-4])
-            else:
-                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
+
+            args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+            args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+            args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+            args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
             #args.append('--objcc=' + tools.unix_path(self.deps_env_info['android-ndk'].OBJCOPY))
 
             args.append('--sysroot=' + tools.unix_path(self.deps_env_info['android-ndk'].SYSROOT))
