@@ -110,8 +110,7 @@ class FFMpegConan(ConanFile):
             self.options.remove("alsa")
             self.options.remove("pulse")
         if self.settings.os != "Macos" and self.settings.os != "iOS":
-            if self.settings.os != "Macos":
-                self.options.remove("appkit")
+            self.options.remove("appkit")
             self.options.remove("avfoundation")
             self.options.remove("coreimage")
             self.options.remove("audiotoolbox")
@@ -121,6 +120,8 @@ class FFMpegConan(ConanFile):
             self.options.remove("qsv")
         if self.settings.os != "Android":
             self.options.remove("mediacodec")
+        if self.settings.os == "iOS":
+            self.options.appkit = False
 
     def build_requirements(self):
         if self.settings.os == 'Android':
@@ -232,7 +233,7 @@ class FFMpegConan(ConanFile):
     def build(self):
 
         if self.is_msvc or self.is_mingw_windows or self.is_android_windows:
-            msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
+            msys_bin = self.deps_env_info['msys2'].MSYS_BIN
             with tools.environment_append({'PATH': [msys_bin],
                                            'CONAN_BASH_PATH': os.path.join(msys_bin, 'bash.exe')}):
                 if self.is_msvc:
@@ -329,8 +330,8 @@ class FFMpegConan(ConanFile):
                                 '--disable-libxcb-shape', '--disable-libxcb-xfixes'])
 
         if self.settings.os == "Macos" or self.settings.os == "iOS":
-            if self.settings.os == "iOS":
-                args.append('--disable-appkit')
+
+            args.append('--enable-appkit' if self.options.appkit else '--disable-appkit')
             args.append('--enable-avfoundation' if self.options.avfoundation else '--disable-avfoundation')
             args.append('--enable-coreimage' if self.options.avfoundation else '--disable-coreimage')
             args.append('--enable-audiotoolbox' if self.options.audiotoolbox else '--disable-audiotoolbox')
@@ -357,11 +358,17 @@ class FFMpegConan(ConanFile):
             args.append('--ar=' + tools.unix_path(self.deps_env_info['android-ndk'].AR))
             args.append('--ranlib=' + tools.unix_path(self.deps_env_info['android-ndk'].RANLIB))
             args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
-
-            args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
-            args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
+            if self.settings.compiler == 'clang':
+                # if we use arm-linux-androideabi-clang.cmd we will run into the windows cmd.exe max command line length limit during linking. We should use the sh scripts
+                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
+                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
+                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
+                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX)[:-4])
+            else:
+                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
+                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX))
             #args.append('--objcc=' + tools.unix_path(self.deps_env_info['android-ndk'].OBJCOPY))
 
             args.append('--sysroot=' + tools.unix_path(self.deps_env_info['android-ndk'].SYSROOT))
@@ -419,14 +426,14 @@ class FFMpegConan(ConanFile):
             # ffmpeg's configure is not actually from autotools, so it doesn't understand standard options like
             # --host, --build, --target
             with tools.environment_append({"PATH": [self.build_folder]}): # Add the build folder to the path so that gas-preprocessor.pl can be found
+                with tools.remove_from_path("java"): # For Android the jni header files musn't be searched in the java folder provided by the host
 
-                env_build.configure(args=args, build=False, host=False, target=False,
-                                    pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
+                    env_build.configure(args=args, build=False, host=False, target=False, pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
 
-                with tools.environment_append(env_build.vars):
-                    #self.run("whereis make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-                    self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-                    self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                    with tools.environment_append(env_build.vars):
+                        #self.run("whereis make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                        self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                        self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
 
                 #env_build.make()
                 #env_build.make(args=['install'])
@@ -461,7 +468,7 @@ class FFMpegConan(ConanFile):
         else:
             self.cpp_info.libs = libs
         if self.settings.os == "Macos" or self.settings.os == "iOS":
-            frameworks = ['CoreVideo', 'CoreMedia', 'CoreGraphics', 'CoreFoundation', 'OpenGL', 'Foundation']
+            frameworks = ['CoreVideo', 'CoreMedia', 'CoreGraphics', 'CoreFoundation', 'Foundation']
             if self.options.appkit:
                 frameworks.append('AppKit')
             if self.options.avfoundation:
@@ -476,6 +483,8 @@ class FFMpegConan(ConanFile):
                 frameworks.append('Security')
             for framework in frameworks:
                 self.cpp_info.exelinkflags.append("-framework %s" % framework)
+            if self.settings.os == "Macos":
+                self.cpp_info.exelinkflags.append("-framework OpenGL")
             self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
         elif self.settings.os == "Linux":
             self.cpp_info.libs.extend(['dl', 'pthread'])
