@@ -125,11 +125,12 @@ class FFMpegConan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == 'Android':
-            self.options["android-ndk"].makeStandalone = True
             if self.settings.os_build == 'Windows':
                 self.build_requires("strawberryperl/5.26.0@conan/stable")
                 self.build_requires("msys2/20161025@tereius/stable")
+                self.build_requires_options["msys2"].provideMinGW = False
             self.build_requires("android-ndk/r17b@tereius/stable")
+            self.build_requires_options["android-ndk"].makeStandalone = True
         if self.settings.arch == "x86" or self.settings.arch == "x86_64":
             self.build_requires("yasm_installer/1.3.0@bincrafters/stable")
         if self.settings.os == 'Windows':
@@ -426,6 +427,8 @@ class FFMpegConan(ConanFile):
             # ffmpeg's configure is not actually from autotools, so it doesn't understand standard options like
             # --host, --build, --target
             with tools.environment_append({"PATH": [self.build_folder]}): # Add the build folder to the path so that gas-preprocessor.pl can be found
+
+                env_build.vars["JAVA_HOME"] = None
                 with tools.remove_from_path("java"): # For Android the jni header files musn't be searched in the java folder provided by the host
 
                     env_build.configure(args=args, build=False, host=False, target=False, pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
