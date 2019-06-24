@@ -359,7 +359,7 @@ class FFMpegConan(ConanFile):
             args.append('--ar=' + tools.unix_path(self.deps_env_info['android-ndk'].AR))
             args.append('--ranlib=' + tools.unix_path(self.deps_env_info['android-ndk'].RANLIB))
             args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
-            if self.settings.compiler == 'clang':
+            if self.settings.os_build == 'Windows':
                 # if we use arm-linux-androideabi-clang.cmd we will run into the windows cmd.exe max command line length limit during linking. We should use the sh scripts
                 args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
                 args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
@@ -428,7 +428,7 @@ class FFMpegConan(ConanFile):
             # --host, --build, --target
             with tools.environment_append({"PATH": [self.build_folder]}): # Add the build folder to the path so that gas-preprocessor.pl can be found
 
-                #env_build.vars["JAVA_HOME"] = None
+                env_build.vars["JAVA_HOME"] = None
                 #with tools.remove_from_path("java"): # For Android the jni header files musn't be searched in the java folder provided by the host
 
                 env_build.configure(args=args, build=False, host=False, target=False, pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
