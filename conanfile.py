@@ -344,7 +344,7 @@ class FFMpegConan(ConanFile):
             args.append('--target-os=darwin')
             #args.append('--sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS%s.sdk' % self.settings.os.version)
             args.append('--cc=xcrun -sdk iphoneos clang')
-            args.append('--as=gas-preprocessor.pl -arch aarch64 -- xcrun -sdk iphoneos clang')
+            args.append('--as=perl gas-preprocessor.pl -arch aarch64 -- xcrun -sdk iphoneos clang')
             args.append('--extra-cflags=-arch arm64 -mios-version-min=8.0 -fembed-bitcode')
             args.append('--extra-ldflags=-arch arm64 -mios-version-min=8.0 -fembed-bitcode')
 
