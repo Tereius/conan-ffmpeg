@@ -428,15 +428,15 @@ class FFMpegConan(ConanFile):
             # --host, --build, --target
             with tools.environment_append({"PATH": [self.build_folder]}): # Add the build folder to the path so that gas-preprocessor.pl can be found
 
-                env_build.vars["JAVA_HOME"] = None
-                with tools.remove_from_path("java"): # For Android the jni header files musn't be searched in the java folder provided by the host
+                #env_build.vars["JAVA_HOME"] = None
+                #with tools.remove_from_path("java"): # For Android the jni header files musn't be searched in the java folder provided by the host
 
-                    env_build.configure(args=args, build=False, host=False, target=False, pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
+                env_build.configure(args=args, build=False, host=False, target=False, pkg_config_paths=[pkg_config_path], configure_dir=self.build_folder + "/sources")
 
-                    with tools.environment_append(env_build.vars):
-                        #self.run("whereis make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-                        self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-                        self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                with tools.environment_append(env_build.vars):
+                    #self.run("whereis make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                    self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                    self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
 
                 #env_build.make()
                 #env_build.make(args=['install'])
