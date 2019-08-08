@@ -14,7 +14,7 @@ class FFMpegConan(ConanFile):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md"
     exports = "gas-preprocessor.pl"
-    exports_sources = ["LICENSE"]
+    exports_sources = ["LICENSE", "dylibToFramework.sh"]
     settings = "os", "arch", "compiler", "build_type", "os_build", "arch_build"
     options = {"shared": [True, False],
                "fPIC": [True, False],
@@ -431,7 +431,7 @@ class FFMpegConan(ConanFile):
 
                 with tools.environment_append(env_build.vars):
                     #self.run("whereis make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
-                    self.run("make", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
+                    self.run("make -j8", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
                     self.run("make install", win_bash=self.is_mingw_windows or self.is_msvc or self.is_android_windows)
 
                 #env_build.make()
@@ -453,6 +453,8 @@ class FFMpegConan(ConanFile):
                 libs = glob.glob('*.a')
                 for lib in libs:
                     shutil.move(lib, lib[:-2] + '.lib')
+        if self.settings.os == "iOS" and self.settings.build_type == "Release":
+            self.run("%s/dylibToFramework.sh %s" % (self.source_folder, self.package_folder))
 
     def package_info(self):
         libs = ['avdevice', 'avfilter', 'avformat', 'avcodec', 'swresample', 'swscale', 'avutil']
