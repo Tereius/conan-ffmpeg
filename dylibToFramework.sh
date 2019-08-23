@@ -22,8 +22,8 @@ for dylib in "${dylibs[@]}"; do
   echo "Processing dynamic library: $dylib"
 
   lib_basename=$(basename "$dylib" .dylib)
-  #lib_basename=$(echo $lib_basename | sed "s/\.[0-9].*//")
-  lib_basename=$(echo $lib_basename | sed "s/[^a-zA-Z]//g")
+  lib_basename=$(echo $lib_basename | sed "s/\.[0-9].*//")
+  lib_bundlename=$(echo $lib_basename | sed "s/[^a-zA-Z]//g")
   lib_directory=$(dirname "$dylib")
   framework="$lib_directory/$lib_basename.framework"
 
@@ -38,7 +38,7 @@ for dylib in "${dylibs[@]}"; do
   codesign --remove-signature "$new_dylib"
 
   #clean_basename=$(echo "$lib_basename._ /" | tr -cd '[a-zA-Z0-9]')
-  bundle_indentifier="com.company.$lib_basename"
+  bundle_indentifier="com.company.$lib_bundlename"
   min_os_version="11.0"
 
   # Create a plist file for each dylib
