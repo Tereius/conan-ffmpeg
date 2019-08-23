@@ -22,7 +22,8 @@ for dylib in "${dylibs[@]}"; do
   echo "Processing dynamic library: $dylib"
 
   lib_basename=$(basename "$dylib" .dylib)
-  lib_basename=$(echo $lib_basename | sed "s/\.[0-9].*//")
+  #lib_basename=$(echo $lib_basename | sed "s/\.[0-9].*//")
+  lib_basename=$(echo $lib_basename | sed "s/[^a-zA-Z]//g")
   lib_directory=$(dirname "$dylib")
   framework="$lib_directory/$lib_basename.framework"
 
