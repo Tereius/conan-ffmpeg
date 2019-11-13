@@ -9,7 +9,7 @@ import shutil
 
 class FFMpegConan(ConanFile):
     name = "ffmpeg"
-    version = "4.0"
+    version = "4.1"
     url = "https://github.com/Tereius/conan-ffmpeg"
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md"
