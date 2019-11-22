@@ -336,6 +336,7 @@ class FFMpegConan(ConanFile):
             args.append('--enable-audiotoolbox' if self.options.audiotoolbox else '--disable-audiotoolbox')
             args.append('--enable-videotoolbox' if self.options.videotoolbox else '--disable-videotoolbox')
             args.append('--enable-securetransport' if self.options.securetransport else '--disable-securetransport')
+            args.append('--install-name-dir=@rpath')
 
         if self.settings.os == "iOS":
             args.append('--enable-cross-compile')
@@ -345,6 +346,7 @@ class FFMpegConan(ConanFile):
             args.append('--as=gas-preprocessor.pl -arch aarch64 -- xcrun -sdk iphoneos clang')
             args.append('--extra-cflags=-arch arm64 -mios-version-min=8.0 -fembed-bitcode')
             args.append('--extra-ldflags=-arch arm64 -mios-version-min=8.0 -fembed-bitcode')
+            args.append('--install-name-dir=@rpath')
 
         if self.settings.os == "Windows":
             args.append('--enable-libmfx' if self.options.qsv else '--disable-libmfx')
