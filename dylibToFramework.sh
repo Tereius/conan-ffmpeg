@@ -11,7 +11,6 @@ if [ "$path_to_search" != "" ]; then
 echo "*** dylibToFramework.sh starting ***"
 
 declare -a dylibs
-declare -a new_dylibs
 
 # Search for dylibs
 while IFS=  read -r -d $'\0'; do
@@ -76,29 +75,31 @@ EOL
     "$path_to_qtMetadataExtractor" -o "$framework/$lib_basename.json" "$new_dylib"
   fi
 
-  new_dylibs+=( $(echo "$new_dylib") )
-
 done
+
+declare -a frameworks
+declare -a new_dylibs
+while IFS=  read -r -d $'\0'; do
+    framework_find_result=("$REPLY")
+    frameworks+=$framework_find_result
+    framework_basename=$(basename "$framework_find_result" .framework)
+    new_dylibs+=( $(echo "$framework_find_result/$framework_basename") )
+done < <(find $path_to_search -name "*.framework" -type d -print0)
 
 # Change all library name dependencies
 echo "Changing library name dependencies..."
 for dylib_outer in "${new_dylibs[@]}"; do
+  basename_outer=$(basename "$dylib_outer")
   library_id=$(otool -DX "$dylib_outer")
-  install_name_tool -id "$dylib_outer" "$dylib_outer"
+  install_name_tool -id "@rpath/$basename_outer.framework/$basename_outer" "$dylib_outer"
 
   for dylib_inner in "${new_dylibs[@]}"; do
-    install_name_tool -change "$library_id" "$dylib_outer" "$dylib_inner"
+    install_name_tool -change "$library_id" "@rpath/$basename_outer.framework/$basename_outer" "$dylib_inner"
   done
 done
 
 # The MinimumOSVersion key has to be present in each framework
-declare -a frameworks
-
 echo "Checking the Info.plist file in all frameworks..."
-while IFS=  read -r -d $'\0'; do
-    frameworks+=("$REPLY")
-done < <(find $path_to_search -name "*.framework" -type d -print0)
-
 for framework in "${frameworks[@]}"; do
   plist_file="$framework/Info.plist"
   echo "Checking $plist_file for the right MinimumOSVersion entry..."
