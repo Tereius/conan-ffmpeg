@@ -12,6 +12,8 @@ echo "*** dylibToFramework.sh starting ***"
 
 declare -a dylibs
 
+min_os_version="11.0"
+
 # Search for dylibs
 while IFS=  read -r -d $'\0'; do
     dylibs+=("$REPLY")
@@ -38,7 +40,6 @@ for dylib in "${dylibs[@]}"; do
 
   #clean_basename=$(echo "$lib_basename._ /" | tr -cd '[a-zA-Z0-9]')
   bundle_indentifier="com.company.$lib_bundlename"
-  min_os_version="11.0"
 
   # Create a plist file for each dylib
   echo "Creating Info.plist..."
@@ -81,7 +82,7 @@ declare -a frameworks
 declare -a new_dylibs
 while IFS=  read -r -d $'\0'; do
     framework_find_result=("$REPLY")
-    frameworks+=$framework_find_result
+    frameworks+=("$framework_find_result")
     framework_basename=$(basename "$framework_find_result" .framework)
     new_dylibs+=( $(echo "$framework_find_result/$framework_basename") )
 done < <(find $path_to_search -name "*.framework" -type d -print0)
