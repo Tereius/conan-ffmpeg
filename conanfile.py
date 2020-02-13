@@ -47,7 +47,8 @@ class FFMpegConan(ConanFile):
                "videotoolbox": [True, False],
                "securetransport": [True, False],
                "qsv": [True, False],
-               "mediacodec": [True, False]}
+               "mediacodec": [True, False],
+               "commandLineOptions": "ANY"}
     default_options = ("shared=True",
                        "fPIC=True",
                        "postproc=True",
@@ -79,7 +80,8 @@ class FFMpegConan(ConanFile):
                        "videotoolbox=True",
                        "securetransport=True",
                        "qsv=True",
-                       "mediacodec=True")
+                       "mediacodec=True",
+                       "commandLineOptions=")
 
     @property
     def is_mingw_windows(self):
@@ -383,6 +385,10 @@ class FFMpegConan(ConanFile):
 
         # FIXME disable CUDA and CUVID by default, revisit later
         args.extend(['--disable-cuda', '--disable-cuvid'])
+
+        # Custom command line options
+        if len(str(self.options.commandLineOptions)) > 0:
+            args.extend(str(self.options.commandLineOptions).split(" "))
 
         tools.mkdir('pkgconfig')
         if self.options.freetype:
