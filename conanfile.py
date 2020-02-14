@@ -291,8 +291,10 @@ class FFMpegConan(ConanFile):
             args.append('--arch=armv6-m')
         elif str(self.settings.arch).startswith('armv7'):
             args.append('--arch=armv7-a')
+            args.append('--disable-armv6')
         elif str(self.settings.arch).startswith('armv8'):
             args.append('--arch=arm64')
+            args.append('--disable-armv6')
 
         args.append('--enable-postproc' if self.options.postproc else '--disable-postproc')
         args.append('--enable-pic' if self.options.fPIC else '--disable-pic')
