@@ -14,7 +14,7 @@ class FFMpegConan(ConanFile):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md"
     exports = "gas-preprocessor.pl"
-    exports_sources = ["LICENSE", "dylibToFramework.sh"]
+    exports_sources = ["LICENSE", "dylibToFramework.sh", "ios.patch"]
     settings = "os", "arch", "compiler", "build_type", "os_build", "arch_build"
     options = {"shared": [True, False],
                "fPIC": [True, False],
@@ -100,6 +100,7 @@ class FFMpegConan(ConanFile):
         tools.get(source_url)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, "sources")
+        tools.patch(patch_file="ios.patch", base_path="sources")
 
     def configure(self):
         del self.settings.compiler.libcxx
