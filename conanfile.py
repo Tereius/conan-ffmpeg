@@ -366,10 +366,10 @@ class FFMpegConan(ConanFile):
             args.append('--strip=' + tools.unix_path(self.deps_env_info['android-ndk'].STRIP))
             if self.settings.compiler == 'clang':
                 # if we use arm-linux-androideabi-clang.cmd we will run into the windows cmd.exe max command line length limit during linking. We should use the sh scripts
-                args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
-                args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
-                args.append('--cc=' + tools.unix_path(self.deps_env_info['android-ndk'].CC)[:-4])
-                args.append('--cxx=' + tools.unix_path(self.deps_env_info['android-ndk'].CXX)[:-4])
+                args.append('--as=' + tools.unix_path(os.path.splitext(self.deps_env_info['android-ndk'].CC)[0]))
+                args.append('--ld=' + tools.unix_path(os.path.splitext(self.deps_env_info['android-ndk'].CC)[0]))
+                args.append('--cc=' + tools.unix_path(os.path.splitext(self.deps_env_info['android-ndk'].CC)[0]))
+                args.append('--cxx=' + tools.unix_path(os.path.splitext(self.deps_env_info['android-ndk'].CXX)[0]))
             else:
                 args.append('--as=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
                 args.append('--ld=' + tools.unix_path(self.deps_env_info['android-ndk'].CC))
