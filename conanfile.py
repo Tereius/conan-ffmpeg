@@ -14,7 +14,7 @@ class FFMpegConan(ConanFile):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md"
     exports = "gas-preprocessor.pl"
-    exports_sources = ["LICENSE", "dylibToFramework.sh", "ios.patch"]
+    exports_sources = ["LICENSE"]
     settings = "os", "arch", "compiler", "build_type", "os_build", "arch_build"
     options = {"shared": [True, False],
                "fPIC": [True, False],
@@ -100,8 +100,8 @@ class FFMpegConan(ConanFile):
         tools.get(source_url)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, "sources")
-        tools.patch(patch_file="ios.patch", base_path="sources")
-
+        tools.replace_in_file("./sources/libavcodec/v4l2_m2m.h", "#include <linux/videodev2.h>", "#include <linux/videodev2.h>\n#include <linux/limits.h>")
+        
     def configure(self):
         del self.settings.compiler.libcxx
 
@@ -277,6 +277,7 @@ class FFMpegConan(ConanFile):
         else:
             args.extend(['--disable-shared', '--enable-static'])
         args.append('--pkg-config-flags=--static')
+        args.append('--pkg-config=pkg-config')
         if self.settings.build_type == 'Debug':
             args.extend(['--disable-optimizations', '--disable-mmx', '--disable-stripping', '--enable-debug'])
         if self.is_msvc:
@@ -386,6 +387,28 @@ class FFMpegConan(ConanFile):
             if self.settings.compiler == 'clang':
                 tools.replace_in_file("./sources/libavdevice/v4l2.c", "int (*ioctl_f)(int fd, unsigned long int request, ...);", "int (*ioctl_f)(int fd, unsigned int request, ...);")
 
+        if os.getenv("RASPBIAN_ROOTFS") is not None:
+            args.append('--enable-cross-compile')
+            args.append('--target-os=linux')
+
+            args.append('--nm=' + tools.unix_path(self.deps_env_info['raspbian'].NM))
+            args.append('--ar=' + tools.unix_path(self.deps_env_info['raspbian'].AR))
+            args.append('--ranlib=' + tools.unix_path(self.deps_env_info['raspbian'].RANLIB))
+            args.append('--strip=' + tools.unix_path(self.deps_env_info['raspbian'].STRIP))
+            args.append('--as=' + tools.unix_path(self.deps_env_info['raspbian'].CC))
+            args.append('--ld=' + tools.unix_path(self.deps_env_info['raspbian'].CC))
+            args.append('--cc=' + tools.unix_path(self.deps_env_info['raspbian'].CC))
+            args.append('--cxx=' + tools.unix_path(self.deps_env_info['raspbian'].CXX))
+            #args.append('--objcc=' + tools.unix_path(self.deps_env_info['android-ndk'].OBJCOPY))
+
+            args.append('--sysroot=' + tools.unix_path(self.deps_env_info['raspbian'].RASPBIAN_ROOTFS))
+
+            args.append('--cross-prefix=' + self.deps_env_info['raspbian'].CHOST + '-')
+            args.append('--disable-libpulse')
+            args.append('--disable-alsa')
+            args.append('--disable-vaapi')
+            args.append('--disable-vdpau')
+
         # FIXME disable CUDA and CUVID by default, revisit later
         args.extend(['--disable-cuda', '--disable-cuvid'])
 
@@ -464,8 +487,6 @@ class FFMpegConan(ConanFile):
                 libs = glob.glob('*.a')
                 for lib in libs:
                     shutil.move(lib, lib[:-2] + '.lib')
-        if self.settings.os == "iOS" and self.settings.build_type == "Release":
-            self.run("%s/dylibToFramework.sh %s" % (self.source_folder, self.package_folder))
 
     def package_info(self):
         libs = ['avdevice', 'avfilter', 'avformat', 'avcodec', 'swresample', 'swscale', 'avutil']
