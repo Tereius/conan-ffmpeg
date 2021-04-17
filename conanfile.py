@@ -79,7 +79,7 @@ class FFMpegConan(ConanFile):
                        "audiotoolbox=True",
                        "videotoolbox=True",
                        "securetransport=True",
-                       "qsv=True",
+                       "qsv=False",
                        "mediacodec=True",
                        "commandLineOptions=")
 
