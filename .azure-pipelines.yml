@@ -12,6 +12,9 @@ jobs:
       armv7Linux:
         imageName: "ubuntu-16.04"
         buildProfile: "androidArmv7LinuxHost"
+      armv8Linux:
+        imageName: "ubuntu-16.04"
+        buildProfile: "androidArmv8LinuxHost"
       armv7Windows:
         imageName: "windows-2019"
         buildProfile: "androidArmv7WinHost"
